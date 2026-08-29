@@ -9,6 +9,10 @@ const {
 
 const FAST_MODE_GOOGLE_SUFFIXES = new Set(["com", "cat"]);
 const FAST_MODE_YANDEX_SUFFIXES = new Set(["com", "ru", "by", "kz", "uz", "com.tr"]);
+const SLASH_SHORTCUT_CODES = {
+  "/": ["1", "2", "3"],
+  "//": ["1", "2", "3", "4"]
+};
 
 function isHost(host, suffix) {
   return host === suffix || host.endsWith(`.${suffix}`);
@@ -49,6 +53,8 @@ function normalizeCodes(codes) {
 
 // Parses text AFTER the slash. Examples:
 // "cats"      -> 12 + cats
+// "/ cats"    -> 123 + cats (the complete command starts with //)
+// "// cats"   -> 1234 + cats (the complete command starts with ///)
 // "23 cats"   -> 23 + cats
 // "12345 AI"  -> 12345 + AI
 function parseSlashBody(raw) {
@@ -57,12 +63,16 @@ function parseSlashBody(raw) {
   let text = raw.trim();
   if (!text) return null;
 
-  const match = text.match(/^([1-6]+)(?=\s|$)/);
+  const slashShortcut = text.match(/^(\/{1,2})(?=\s|$)/);
+  const codeMatch = text.match(/^([1-6]+)(?=\s|$)/);
   let codes = DEFAULT_CODES;
 
-  if (match) {
-    codes = normalizeCodes(match[1].split(""));
-    text = text.slice(match[0].length).trimStart();
+  if (slashShortcut) {
+    codes = SLASH_SHORTCUT_CODES[slashShortcut[1]];
+    text = text.slice(slashShortcut[0].length).trimStart();
+  } else if (codeMatch) {
+    codes = normalizeCodes(codeMatch[1].split(""));
+    text = text.slice(codeMatch[0].length).trimStart();
   }
 
   if (!text || codes.length === 0) return null;
@@ -72,7 +82,7 @@ function parseSlashBody(raw) {
 function parseSlashCommand(raw) {
   if (!raw) return null;
   const text = raw.trimEnd();
-  if (!text.startsWith("/") || text.startsWith("//")) return null;
+  if (!text.startsWith("/") || text.startsWith("////")) return null;
   return parseSlashBody(text.slice(1));
 }
 
@@ -266,7 +276,7 @@ async function executeSearch(tabId, codes, query) {
 // ---- Omnibox hint mode ----------------------------------------------------
 // Type "/" then Space/Tab to enter extension keyword mode.
 chrome.omnibox.setDefaultSuggestion({
-  description: "<match>多引擎搜索</match> <dim>1 Bing · 2 Google · 3 Yandex · 4 百度 · 5 DuckDuckGo · 6 Brave | ≤4 同页，≥5 标签组</dim>"
+  description: "<match>多引擎搜索</match> <dim>//=123 · ///=1234 · 1 Bing · 2 Google · 3 Yandex · 4 百度 · 5 DuckDuckGo · 6 Brave</dim>"
 });
 
 chrome.omnibox.onInputChanged.addListener((text, suggest) => {
@@ -279,14 +289,14 @@ chrome.omnibox.onInputChanged.addListener((text, suggest) => {
     });
   } else {
     chrome.omnibox.setDefaultSuggestion({
-      description: "<match>输入编号 + 关键词</match> <dim>默认 12=Bing+Google | 3=Yandex | 4=百度 | 1234=四宫格 | 12345=标签组</dim>"
+      description: "<match>输入编号或斜杠快捷方式 + 关键词</match> <dim>默认 12 | //=123 | ///=1234 | 12345=标签组</dim>"
     });
   }
 
   // If the user already typed a query without explicit engine numbers,
   // provide useful one-click alternatives in the dropdown.
-  const explicitCode = /^([1-6]+)(?=\s|$)/.test(trimmed);
-  if (trimmed && !explicitCode) {
+  const explicitSelection = /^(?:[1-6]+|\/{1,2})(?=\s|$)/.test(trimmed);
+  if (trimmed && !explicitSelection) {
     const q = trimmed.trim();
     const safeQ = escapeXml(q);
     suggest([

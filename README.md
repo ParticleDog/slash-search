@@ -28,6 +28,13 @@ A lightweight Microsoft Edge extension for searching multiple search engines dir
 
 The default selection is `12`, so `/ query` means Bing + Google.
 
+Two slash shortcuts are also available:
+
+| Command prefix | Equivalent engine codes |
+| --- | --- |
+| `//` | `/123` |
+| `///` | `/1234` |
+
 ## Usage
 
 ### Quick mode
@@ -53,6 +60,8 @@ More examples:
 | Command | Result |
 | --- | --- |
 | `/ cats` | Bing + Google in one tab |
+| `// cats` | Bing + Google + Yandex in three columns |
+| `/// cats` | Bing + Google + Yandex + Baidu in a 2×2 grid |
 | `/1 cats` | Bing only |
 | `/2 cats` | Google only |
 | `/3 cats` | Yandex only |
@@ -78,10 +87,14 @@ Examples after entering `/` keyword mode:
 
 ```text
 cats
+/ cats
+// cats
 23 cats
 1234 cats
 12345 cats
 ```
+
+In keyword mode the first `/` has already activated the extension, so entering `/ cats` produces the complete `// cats` shortcut, and entering `// cats` produces `/// cats`.
 
 The suggestion area shows the engine combination and whether the result will use a single page or a tab group.
 
@@ -105,14 +118,12 @@ Both search engines are displayed side by side.
 
 ### 3 engines
 
-The extension uses a 2 + 1 layout.
+The extension uses three equal-width columns.
 
 ```text
-┌──────────────────┬──────────────────┐
-│       Bing       │      Google      │
-├──────────────────┴──────────────────┤
-│               Yandex               │
-└─────────────────────────────────────┘
+┌────────────┬────────────┬────────────┐
+│    Bing    │   Google   │   Yandex   │
+└────────────┴────────────┴────────────┘
 ```
 
 ### 4 engines
@@ -198,6 +209,8 @@ Commands such as:
 
 ```text
 /23 cats
+// cats
+/// cats
 ```
 
 can also be typed directly without explicitly entering Omnibox keyword mode.
@@ -294,7 +307,7 @@ npm test
 npm run check
 ```
 
-The tests cover command parsing, fast-mode domain validation, concurrent framing-rule setup, navigation cleanup, single-engine cleanup, and tab-group rollback.
+The tests cover command and slash-shortcut parsing, fast-mode domain validation, the three-column layout, concurrent framing-rule setup, navigation cleanup, single-engine cleanup, and tab-group rollback.
 
 ## Contributing
 

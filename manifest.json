@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Slash Multi Search",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Use / to search multiple engines. Up to 4 engines share one tab; 5+ open as a tab group.",
   "permissions": [
     "tabs",

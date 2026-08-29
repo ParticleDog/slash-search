@@ -124,6 +124,27 @@ test("parses engine codes, removes duplicates, and restores numeric order", () =
   });
 });
 
+test("maps double and triple slash commands to three and four engines", () => {
+  const harness = createHarness();
+  assert.deepEqual(plain(harness.call('parseSlashBody("/ cats")')), {
+    codes: ["1", "2", "3"],
+    query: "cats"
+  });
+  assert.deepEqual(plain(harness.call('parseSlashBody("// cats")')), {
+    codes: ["1", "2", "3", "4"],
+    query: "cats"
+  });
+  assert.deepEqual(plain(harness.call('parseSlashCommand("// cats")')), {
+    codes: ["1", "2", "3"],
+    query: "cats"
+  });
+  assert.deepEqual(plain(harness.call('parseSlashCommand("/// cats")')), {
+    codes: ["1", "2", "3", "4"],
+    query: "cats"
+  });
+  assert.equal(harness.call('parseSlashCommand("//// cats")'), null);
+});
+
 test("fast-mode URL detection accepts supported domains but rejects lookalikes", () => {
   const harness = createHarness();
   assert.equal(
@@ -189,4 +210,13 @@ test("a failed tab group removes new tabs and restores the source tab", async ()
 
   assert.deepEqual(harness.removedTabs, [100, 101, 102, 103]);
   assert.equal(harness.updatedTabs.at(-1).options.url, "https://example.com/original");
+});
+
+test("the three-engine grid uses three equal-width columns", () => {
+  const css = fs.readFileSync(path.join(__dirname, "..", "split.css"), "utf8");
+  assert.match(
+    css,
+    /#grid\[data-count="3"\]\s*{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/s
+  );
+  assert.doesNotMatch(css, /#grid\[data-count="3"\]\s+\.panel:nth-child/);
 });

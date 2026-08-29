@@ -1,4 +1,4 @@
-Slash Multi Search 2.0 - Edge extension
+Slash Multi Search 2.1 - Edge extension
 
 编号：
 1 = Bing
@@ -11,15 +11,19 @@ Slash Multi Search 2.0 - Edge extension
 核心规则：
 - 统一只用 /。
 - 不写编号时，/ 默认相当于 /12（Bing + Google）。
+- // 默认相当于 /123（Bing + Google + Yandex）。
+- /// 默认相当于 /1234（Bing + Google + Yandex + 百度）。
 - 选择 1~4 个搜索引擎：在一个 Tab 中显示。
 - 选择 5~6 个搜索引擎：自动创建 Edge 标签组。
 - 单选一个搜索引擎：直接打开该搜索引擎。
 
 快速输入（不用进入扩展提示模式）：
 / 苹果           -> Bing + Google，同一 Tab
+// 苹果          -> Bing + Google + Yandex，三竖列
+/// 苹果         -> Bing + Google + Yandex + 百度，2x2
 /3 苹果          -> Yandex
 /23 苹果         -> Google + Yandex，同一 Tab
-/123 苹果        -> 3 个搜索引擎，同一 Tab（2+1 布局）
+/123 苹果        -> 3 个搜索引擎，同一 Tab（三竖列）
 /1234 苹果       -> 4 个搜索引擎，同一 Tab（2x2）
 /12345 苹果      -> 5 个搜索引擎，自动标签组
 /123456 苹果     -> 6 个搜索引擎，自动标签组
@@ -34,6 +38,8 @@ Slash Multi Search 2.0 - Edge extension
 3. 地址栏下方会显示编号说明和搜索组合提示
 4. 输入：
    苹果          -> 默认 Bing + Google
+   / 苹果        -> Bing + Google + Yandex
+   // 苹果       -> Bing + Google + Yandex + 百度
    23 苹果       -> Google + Yandex
    12345 苹果    -> 5 个引擎，标签组
 5. 按 Enter 搜索
