@@ -11,7 +11,7 @@ A lightweight Microsoft Edge extension for searching multiple search engines dir
 - Up to 4 engines displayed together in one tab
 - 5 or more engines automatically opened as an Edge tab group
 - Address-bar suggestions through the Omnibox API
-- Fast mode: commands such as `/23 query` work without entering Omnibox keyword mode
+- Fast mode: commands such as `/23 query` work without entering Omnibox keyword mode when the browser's default search engine is supported
 - No backend server or proxy
 - Easy to extend with additional search engines
 
@@ -31,6 +31,8 @@ The default selection is `12`, so `/ query` means Bing + Google.
 ## Usage
 
 ### Quick mode
+
+Quick mode requires Edge's default search engine to be one of the URL formats recognized by this extension: Bing, Google (including common localized domains), Yandex (including its supported regional domains), Baidu, DuckDuckGo, or Brave Search. If another default search engine is configured, use Address-bar hint mode instead.
 
 Type a slash command directly into the Edge address bar:
 
@@ -151,11 +153,16 @@ If you update the source code later, return to `edge://extensions/` and click **
 ```text
 edge-slash-multi-search/
 ├── manifest.json
+├── engines.js
 ├── background.js
 ├── split.html
 ├── split.js
 ├── split.css
-└── README.md
+├── tests/
+│   └── background.test.js
+├── package.json
+├── README.md
+└── README.txt
 ```
 
 ### `background.js`
@@ -168,6 +175,10 @@ Handles:
 - Fast-mode URL detection
 - Single-tab vs. tab-group routing
 - Temporary framing rules for grid tabs
+
+### `engines.js`
+
+Contains the shared search-engine URLs, ordering, defaults, and framing-domain list used by both the service worker and grid page.
 
 ### `split.html`, `split.js`, `split.css`
 
@@ -191,7 +202,7 @@ Commands such as:
 
 can also be typed directly without explicitly entering Omnibox keyword mode.
 
-In this case, Edge first sends the text to the browser's normal search engine. The extension detects the resulting search URL, extracts the slash command, and immediately redirects the tab into Slash Multi Search.
+In this case, Edge first sends the text to the browser's normal search engine. If that search engine uses one of the supported URL formats listed above, the extension extracts the slash command and immediately redirects the tab into Slash Multi Search.
 
 ## Why does the grid mode need extra permissions?
 
@@ -200,15 +211,15 @@ Major search engines generally prevent their pages from being embedded inside an
 - `X-Frame-Options`
 - `Content-Security-Policy`
 
-For grid mode, Slash Multi Search uses `declarativeNetRequest` session rules to remove those response headers **only for sub-frame requests in the specific grid tab**.
+For grid mode, Slash Multi Search uses a `declarativeNetRequest` session rule to remove those response headers **only for supported-domain sub-frame requests in the specific grid tab**.
 
-The rules are scoped to the supported search-engine domains and are removed when the grid tab is closed.
+The rule is removed as soon as the tab leaves the grid page, switches to single-engine or tab-group mode, or is closed.
 
 This is what makes it possible to display multiple original search pages in one tab instead of scraping, proxying, or recreating their results.
 
 ### Security note
 
-Removing anti-framing headers weakens protections that those sites intentionally enable against embedding. The extension limits this behavior to the relevant grid tab and supported search-engine subframes, but users should understand this trade-off before installing the extension.
+Removing anti-framing headers weakens protections that those sites intentionally enable against embedding. In particular, the browser API removes the complete `Content-Security-Policy` response header; it cannot remove only the `frame-ancestors` directive. This also disables the other protections expressed by that CSP for the embedded document. The extension limits the rule to the active grid tab, supported search-engine domains, and sub-frame requests, and removes it on navigation, but users should understand this trade-off before installing the extension.
 
 If a search engine changes its anti-embedding behavior in the future, grid mode for that engine may require an update.
 
@@ -223,7 +234,7 @@ The extension currently requests:
 | `tabs` | Open, update, and inspect search tabs |
 | `tabGroups` | Group searches when 5+ engines are selected |
 | `declarativeNetRequest` | Allow supported search pages to render inside the grid |
-| Host permissions | Limit framing rules and search handling to supported search-engine domains |
+| Host permissions | Authorize response-header modification for supported search-engine domains |
 
 The extension does not require a backend server.
 
@@ -231,7 +242,7 @@ Search queries are sent directly to the selected search engines.
 
 ## Adding another search engine
 
-Search engines are currently defined in both `background.js` and `split.js`.
+Search engines are defined once in `engines.js`.
 
 For example:
 
@@ -244,10 +255,10 @@ For example:
 
 You will also need to:
 
-1. Add the new code to `ENGINE_ORDER`.
+1. Add the new engine and code to the shared configuration in `engines.js`.
 2. Add the site's domain to the framing domain list if it should support grid mode.
 3. Add the required domain to `host_permissions` and the extension page `frame-src` policy in `manifest.json`.
-4. Add the same engine definition to `split.js`.
+4. Update the fast-mode URL extraction logic if the new engine should be recognized as the browser's default search engine.
 5. Update the Omnibox hint text if you want the new engine shown in suggestions.
 
 If the total number of supported engines grows beyond single-digit codes, the command syntax may need to be redesigned.
@@ -257,9 +268,8 @@ If the total number of supported engines grows beyond single-digit codes, the co
 - Built and tested primarily for Microsoft Edge.
 - Other Chromium-based browsers may work, but are not the primary target.
 - Search engines may change their URLs, CSP rules, or iframe behavior at any time.
-- Fast mode depends on recognizing the URL format of the browser's normal search results.
+- Fast mode works only when the browser's default search engine uses one of the supported URL formats listed in the Quick mode section.
 - Some login, popup, or navigation flows inside embedded search pages may behave differently from normal top-level tabs.
-- The current engine configuration is duplicated in `background.js` and `split.js`.
 
 ## Ideas for future versions
 
@@ -273,8 +283,18 @@ Possible improvements include:
 - Drag-to-resize grid panels
 - Remembering favorite engine combinations
 - Keyboard shortcuts
-- Refactoring engine configuration into a shared module
 - Chrome and other Chromium-browser testing
+
+## Development checks
+
+The project uses the built-in test runner from Node.js 18 or newer and has no npm runtime dependencies.
+
+```text
+npm test
+npm run check
+```
+
+The tests cover command parsing, fast-mode domain validation, concurrent framing-rule setup, navigation cleanup, single-engine cleanup, and tab-group rollback.
 
 ## Contributing
 

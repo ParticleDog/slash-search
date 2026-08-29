@@ -24,6 +24,10 @@ Slash Multi Search 2.0 - Edge extension
 /12345 苹果      -> 5 个搜索引擎，自动标签组
 /123456 苹果     -> 6 个搜索引擎，自动标签组
 
+快速模式前提：
+- Edge 的默认搜索引擎必须是本扩展能识别的 Bing、Google（包括常见地区域名）、Yandex（包括受支持的地区域名）、百度、DuckDuckGo 或 Brave Search。
+- 如果默认搜索引擎不是上述之一，请使用地址栏提示模式。
+
 地址栏提示模式：
 1. 在 Edge 地址栏输入 /
 2. 按 Space（空格）或 Tab 进入扩展关键词模式
@@ -37,7 +41,9 @@ Slash Multi Search 2.0 - Edge extension
 说明：
 - “/23 苹果”这种快速模式保留，所以不想看提示时仍然可以一口气输入。
 - 提示模式使用 Edge/Chromium omnibox API；进入关键词模式后扩展才能实时接收每次键盘输入并显示自定义建议。
-- 同页模式通过扩展页嵌入各搜索网站，并只针对该 Tab 的子框架移除 X-Frame-Options/CSP 响应头。
+- 同页模式通过扩展页嵌入各搜索网站，并只针对当前网格 Tab、受支持域名的子框架移除 X-Frame-Options/CSP 响应头。
+- 浏览器 API 会删除整个 Content-Security-Policy 响应头，而不只是 frame-ancestors 指令，因此嵌入页面的其他 CSP 防护也会被移除。
+- 离开网格页、切换为单引擎/标签组模式或关闭 Tab 时，临时规则会立即删除。
 - 某些搜索网站以后如果调整反嵌入策略，同页模式可能需要更新；标签组模式不受影响。
 
 安装：

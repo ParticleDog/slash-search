@@ -1,11 +1,4 @@
-const ENGINES = {
-  "1": { name: "Bing", url: (q) => `https://www.bing.com/search?q=${encodeURIComponent(q)}` },
-  "2": { name: "Google", url: (q) => `https://www.google.com/search?q=${encodeURIComponent(q)}` },
-  "3": { name: "Yandex", url: (q) => `https://yandex.com/search/?text=${encodeURIComponent(q)}` },
-  "4": { name: "百度", url: (q) => `https://www.baidu.com/s?wd=${encodeURIComponent(q)}` },
-  "5": { name: "DuckDuckGo", url: (q) => `https://duckduckgo.com/?q=${encodeURIComponent(q)}` },
-  "6": { name: "Brave", url: (q) => `https://search.brave.com/search?q=${encodeURIComponent(q)}` }
-};
+const { engines: ENGINES } = globalThis.SLASH_MULTI_SEARCH_CONFIG;
 
 const params = new URLSearchParams(location.search);
 const query = params.get("q") || "";

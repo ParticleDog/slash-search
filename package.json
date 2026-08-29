@@ -1,0 +1,9 @@
+{
+  "name": "edge-slash-multi-search",
+  "version": "2.0.0",
+  "private": true,
+  "scripts": {
+    "check": "node --check engines.js && node --check background.js && node --check split.js",
+    "test": "node --test"
+  }
+}
