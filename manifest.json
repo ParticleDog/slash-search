@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Slash Multi Search",
+  "version": "2.0.0",
+  "description": "Use / to search multiple engines. Up to 4 engines share one tab; 5+ open as a tab group.",
+  "permissions": [
+    "tabs",
+    "tabGroups",
+    "declarativeNetRequest"
+  ],
+  "host_permissions": [
+    "https://*.bing.com/*",
+    "https://*.google.com/*",
+    "https://*.google.com.hk/*",
+    "https://*.google.com.sg/*",
+    "https://yandex.com/*",
+    "https://*.yandex.com/*",
+    "https://*.baidu.com/*",
+    "https://duckduckgo.com/*",
+    "https://*.duckduckgo.com/*",
+    "https://search.brave.com/*"
+  ],
+  "omnibox": {
+    "keyword": "/"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; frame-src https://*.bing.com https://*.google.com https://*.google.com.hk https://*.google.com.sg https://yandex.com https://*.yandex.com https://*.baidu.com https://duckduckgo.com https://*.duckduckgo.com https://search.brave.com;"
+  }
+}
